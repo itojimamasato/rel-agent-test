@@ -1,0 +1,98 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ユーザーモデル（Clerkと同期）
+model User {
+  id        String   @id // Clerk User ID
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // リレーション
+  projects Project[]
+  sessions Session[]
+}
+
+// リポジトリタイプ
+enum RepositoryType {
+  github
+  backlog
+}
+
+// プロジェクトモデル
+model Project {
+  id             String         @id @default(cuid())
+  name           String
+  description    String
+  repositoryType RepositoryType
+  repositoryUrl  String
+
+  // GitHub用認証情報
+  githubToken String?
+
+  // Backlog用認証情報
+  backlogDomain      String? // Backlogドメイン（例: xxx.backlog.com）
+  backlogProjectKey  String? // Backlogプロジェクトキー
+  backlogApiKey      String? // Backlog APIキー（課題取得用）
+  backlogEmail       String? // Backlogメールアドレス（Git認証用）
+  backlogGitPassword String? // Backlog Gitパスワード（Git認証用）
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // リレーション
+  userId   String
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions Session[]
+
+  @@index([userId])
+}
+
+// セッションモデル（チャットセッション）
+model Session {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // リレーション
+  projectId String
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  Message[]
+
+  @@index([projectId])
+  @@index([userId])
+}
+
+// メッセージロール
+enum MessageRole {
+  user
+  assistant
+}
+
+// メッセージモデル
+model Message {
+  id        String      @id @default(cuid())
+  role      MessageRole
+  content   String
+  createdAt DateTime    @default(now())
+
+  // リレーション
+  sessionId String
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+}
