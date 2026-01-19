@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs"; // 追加
+import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider> {/* 追加 */}
+    <ClerkProvider>
       <html lang="ja">
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -32,6 +32,6 @@ export default function RootLayout({
           {children}
         </body>
       </html>
-    </ClerkProvider> {/* 追加 */}
+    </ClerkProvider>
   );
 }
